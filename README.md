@@ -23,3 +23,10 @@ This application helps players calculate essential information related to leveli
      - The total XP required to reach your target level.
      - The best streak to aim for based on your win rate.
      - Estimated time to reach the target level, accounting for any streak resets and boosts.
+
+## Installation
+
+You can use the executable, though I know many may not trust .exe files, so the source code is available for those who want to run it that way.
+I used Pyinstaller to create this .exe file, so you will need to do the same, though it can run out of the box through Python, without the need of converting it into an executable.
+
+As always, Virus Scan every file you download, regardless of who or where you get it from.
