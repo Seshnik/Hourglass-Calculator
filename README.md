@@ -30,3 +30,10 @@ You can use the executable, though I know many may not trust .exe files, so the 
 I used Pyinstaller to create this .exe file, so you will need to do the same, though it can run out of the box through Python, without the need of converting it into an executable.
 
 As always, Virus Scan every file you download, regardless of who or where you get it from.
+
+
+## Credits
+
+- [b_ootay_ful](https://www.reddit.com/user/b_ootay_ful/) - For their **PvP Tables: Exp gain, breakpoints** reddit post.
+- [DavidSOT](https://www.youtube.com/@DavidSOT) - For their YouTube video **The Hourglass reputation system explained with data (Sea of Thieves)**
+- [MassiveSponge](https://www.youtube.com/@massivesponge) - For their YouTube video **I SOLVED Sea of Thieves Hourglass | BEST STREAK FOUND** & their [Simulation code](https://github.com/massivesponge/hourglass-solve) that I used to help create my own code to determine Win-rate data.
