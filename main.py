@@ -2,8 +2,14 @@ import math
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtGui import QFontDatabase, QIntValidator, QDoubleValidator
+from PyQt5.QtWidgets import QMessageBox
+from packaging import version
 from hourglass_ui import Ui_MainWindow
 import webbrowser
+import requests
+
+# Pyinstaller:
+# pyinstaller --onefile --windowed --add-data "res_rc.py;." --add-data "hourglass_ui.py;." --name HourglassCalc main.py
 
 # --- Constants ---
 WINDOW_WIDTH = 900
@@ -132,12 +138,13 @@ xp_required = {
 }
 
 # --- App Version ---
-appVersion = "v1.0"
+appVersion = "v1.1.0"
 
 
 class WinRateDialog(QtWidgets.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, main_window, parent=None):
         super(WinRateDialog, self).__init__(parent)
+        self.main_window = main_window
 
         # Set window title and flags
         self.setWindowTitle("Win Rate Calculator")
@@ -251,13 +258,11 @@ class WinRateDialog(QtWidgets.QDialog):
             else:
                 # Update result label with formatted win rate
                 self.result_label.setText(f"Win Rate: {win_rate:.2f}%")
+                self.main_window.ui.textEdit_WINRATE.setText(str(win_rate))
 
         except ValueError:
             # Handle invalid input (e.g., non-numeric values)
             self.result_label.setText("Win Rate: Invalid input")
-
-
-
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -277,7 +282,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.textEdit_WINRATE.setValidator(double_validator)
 
         # Connect actions
-        self.ui.actionUpdate.triggered.connect(self.open_update_url)
+        self.ui.actionUpdate.triggered.connect(self.check_for_updates)
         self.ui.actionEvents.triggered.connect(self.show_events_popup)
         self.ui.actionWin_Rate.triggered.connect(self.show_win_rate_dialog)
 
@@ -287,6 +292,94 @@ class MainWindow(QtWidgets.QMainWindow):
         # Save Button
         self.ui.pushButton_SAVE.setEnabled(False)
         self.ui.pushButton_SAVE.clicked.connect(self.save_data)
+
+        # Set up the checkbox
+        self.ui.checkbox.setStyleSheet("""
+QCheckBox {
+    font-size: 14px;
+    color: #1fe3b1;
+}
+QCheckBox::indicator {
+    width: 20px;
+    height: 20px;
+}
+QCheckBox::indicator:checked {
+    background-color: #1fe3b1;
+}
+QCheckBox::indicator:unchecked {
+    background-color: #fff;
+}
+""")
+
+    def check_for_updates(self):
+        repo_url = "Seshnik/Hourglass-Calculator"
+        current_version = appVersion
+        my_StyleSheet = ("""
+                           QMessageBox {
+                               background-image: url(:/bg/bg.png);  /* Background image from the main GUI */
+                               background-color: #23192f;  /* Fallback background color */
+                               color: #1fe3b1;
+                           }
+                           QMessageBox QLabel {
+                               color: #1fe3b1;
+                           }
+                           QMessageBox QPushButton {
+                               background-color: #1fe3b1;
+                               color: #23192f;
+                               border-radius: 5px;
+                           }
+                           QMessageBox QPushButton:hover {
+                               background-color: #fff;
+                               color: #23192f;
+                           }
+                           QMessageBox QPushButton:pressed {
+                               background-color: #23192f;
+                               color: #1fe3b1;
+                           }
+                       """)
+        latest_version = self.get_latest_version(repo_url)
+        if latest_version:
+            msg = QMessageBox(self)
+
+            if self.is_update_available(current_version, latest_version):
+                msg.setIcon(QMessageBox.Information)
+                msg.setText(f"A new version ({latest_version}) is available. Please update your application.")
+                msg.setWindowTitle("Update Available")
+                msg.setStandardButtons(QMessageBox.Ok)
+
+                # Apply custom style sheet
+                msg.setStyleSheet(my_StyleSheet)
+                result = msg.exec_()
+
+                if result == QMessageBox.Ok:
+                    release_url = f"https://github.com/{repo_url}/releases"
+                    webbrowser.open(release_url)
+            else:
+                msg.setIcon(QMessageBox.Information)
+                msg.setText("Your application is up-to-date.")
+                msg.setWindowTitle("Up-to-Date")
+                msg.setStandardButtons(QMessageBox.Ok)
+
+                # Apply custom style sheet
+                msg.setStyleSheet(my_StyleSheet)
+
+                msg.exec_()
+
+    def is_update_available(self, current_version, latest_version):
+        return version.parse(latest_version) > version.parse(current_version)
+
+    def get_latest_version(self, repo_url):
+        try:
+            # GitHub API URL for latest release
+            api_url = f"https://api.github.com/repos/{repo_url}/releases/latest"
+            response = requests.get(api_url)
+            response.raise_for_status()  # Check if request was successful
+            latest_release = response.json()
+            latest_version = latest_release['tag_name']
+            return latest_version
+        except requests.RequestException as e:
+            print(f"Error fetching latest version: {e}")
+            return None
 
     def save_data(self):
         # Grab the data from the label
@@ -381,6 +474,12 @@ class MainWindow(QtWidgets.QMainWindow):
         button_text = "Calculate"
         button_style = "background-color: #1fe3b1; color: #23192f;"
 
+        # LossFarm
+        if self.ui.checkbox.isChecked():
+            lossFarming = True
+        else:
+            lossFarming = False
+
         # Disable the calc button
         self.ui.pushButton_CALC.setEnabled(False)
         self.ui.pushButton_CALC.setText("Processing")
@@ -389,10 +488,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_SAVE.setText("Save")
 
         # Grab the values from the input fields
-        current_lvl = int(self.ui.textEdit_C_LVL.text())
-        target_lvl = int(self.ui.textEdit_T_LVL.text())
-        win_rate = float(self.ui.textEdit_WINRATE.text()) / 100
-        boost = self.ui.comboBox.currentText()
+        try:
+            current_lvl = int(self.ui.textEdit_C_LVL.text())
+            target_lvl = int(self.ui.textEdit_T_LVL.text())
+            win_rate = float(self.ui.textEdit_WINRATE.text()) / 100
+            boost = self.ui.comboBox.currentText()
+        except ValueError:
+            self.ui.label.setText("Please enter valid numbers.")
+            self.ui.label.setStyleSheet("color: #ff5733; padding: 2px;")
+            self.ui.label.setAlignment(QtCore.Qt.AlignCenter)
+            self.ui.pushButton_CALC.setEnabled(True)
+            self.ui.pushButton_CALC.setText(button_text)
+            self.ui.pushButton_CALC.setStyleSheet(button_style)
+            return
 
         # Check boost against the dictionary and set the value
         boost_value = float(BOOST_VALUES.get(boost, 1))
@@ -469,7 +577,7 @@ class MainWindow(QtWidgets.QMainWindow):
             0.70: 5,
             0.80: 6,  # 8
             0.90: 6,  # 12
-            0.95: 6   # 17
+            0.95: 6  # 17
         }
 
         def get_recommended_streak(winrate):
@@ -503,14 +611,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
         while total_xp < xp_required_to_target:
             if streak == 0:
-                xp_per_win = WIN_XP.get(1, 4200) * boost_value
+                if lossFarming:
+                    xp_per_win = 700 * boost_value
+                else:
+                    xp_per_win = WIN_XP.get(1, 4200) * boost_value
             else:
-                xp_per_win = WIN_XP.get(min(streak + 1, recommended_streak), 6600) * boost_value
+                if lossFarming:
+                    xp_per_win = 700 * boost_value
+                else:
+                    xp_per_win = WIN_XP.get(min(streak + 1, recommended_streak), 6600) * boost_value
 
             # Add XP for the win
             total_xp += xp_per_win
             battles += 1
-            streak += 1
+            if lossFarming:
+                streak = 0
+            else:
+                streak += 1
 
             # Apply lower streak bonus and reset when reaching the recommended streak
             if streak >= recommended_streak:
@@ -530,15 +647,26 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Label
         # Format the label text
-        label_text = (
-            f"Current Level: {current_lvl}\n"
-            f"Target Level: {target_lvl}\n"
-            f"Total XP: {total_xp}\n"
-            f"XP Bonus: {boost_value}\n"
-            f"Suggested Streak: {recommended_streak}\n"
-            f"Estimated Time: {hours} hours and {minutes} minutes"
-        )
+        if lossFarming:
+            label_text = (
+                f"Current Level: {current_lvl}\n"
+                f"Target Level: {target_lvl}\n"
+                f"Total XP: {total_xp}\n"
+                f"XP Bonus: {boost_value}\n"
+                f"Total Battles: {battles}\n"
+                f"Estimated Time: {hours} hours and {minutes} minutes"
+            )
+        else:
+            label_text = (
+                f"Current Level: {current_lvl}\n"
+                f"Target Level: {target_lvl}\n"
+                f"Total XP: {total_xp}\n"
+                f"XP Bonus: {boost_value}\n"
+                f"Total Battles: {battles}\n"
+                f"Recommended Streak: {recommended_streak}\n"
+                f"Estimated Time: {hours} hours and {minutes} minutes."
 
+            )
         # Update the label with the formatted text
         self.ui.label.setText(label_text)
         self.ui.label.setStyleSheet("padding: 2px; color: #1fe3b1;")
@@ -551,6 +679,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Enable the save button
         self.ui.pushButton_SAVE.setEnabled(True)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

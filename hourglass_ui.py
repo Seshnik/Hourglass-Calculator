@@ -9,9 +9,11 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QCheckBox
 
 
 class Ui_MainWindow(object):
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(900, 400)
@@ -246,7 +248,9 @@ class Ui_MainWindow(object):
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.pushButton_CALC = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_CALC.setGeometry(QtCore.QRect(120, 280, 131, 41))
+        self.pushButton_CALC.setGeometry(QtCore.QRect(120, 300, 131, 41))  # Original placement: 120, 280, 131, 41
+        self.checkbox = QtWidgets.QCheckBox("Loss Farm", self.centralwidget)
+        self.checkbox.setGeometry(QtCore.QRect(50, 260, 150, 30))
         font = QtGui.QFont()
         # font.setFamily("Aerial")
         font.setPointSize(12)
@@ -347,6 +351,7 @@ class Ui_MainWindow(object):
         self.textEdit_WINRATE.raise_()
         self.comboBox.raise_()
         self.pushButton_CALC.raise_()
+        self.checkbox.raise_()
         self.label_TITLE.raise_()
         self.title_line_2.raise_()
         self.title_line_3.raise_()
@@ -428,7 +433,7 @@ class Ui_MainWindow(object):
         self.actionEvents.setPriority(QtWidgets.QAction.NormalPriority)
         self.actionEvents.setObjectName("actionEvents")
         self.actionWin_Rate = QtWidgets.QAction(MainWindow)
-        self.actionWin_Rate.setCheckable(True)
+        self.actionWin_Rate.setCheckable(False)
         self.actionWin_Rate.setObjectName("actionWin_Rate")
         self.actionUpdate = QtWidgets.QAction(MainWindow)
         self.actionUpdate.setCheckable(False)
@@ -462,6 +467,7 @@ class Ui_MainWindow(object):
         self.comboBox.setItemText(1, _translate("MainWindow", "Gold & Glory"))
         self.comboBox.setItemText(2, _translate("MainWindow", "Community Day"))
         self.pushButton_CALC.setText(_translate("MainWindow", "Calculate"))
+        self.checkbox.setText(_translate("MainWindow", "Loss Farm"))
         self.label_TITLE.setWhatsThis(_translate("MainWindow", "<html><head/><body><p>Current Level</p></body></html>"))
         self.label_TITLE.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\">Hourglass Calculator</p></body></html>"))
         self.label.setText(_translate("MainWindow", "Calculation Results...."))
