@@ -12,6 +12,7 @@ This does not interact with the game at all, this is purely a side-application u
 - **Leveling Calculator**: Input your current level and target level to see how many battles you need, total XP required, and the estimated time to reach the target.
 - **Boost Support**: Includes calculations for various boost values like `Gold & Glory` and `Community Day` to account for XP bonuses.
 - **Win Rate Calculator**: Integrated win-rate calculator and instructions on how to get this info from your account (Website or In-Game).
+- **Loss Farm Option**: Allows you to enable "Loss Farming" option, to find out how long loss farming would take you.
 
 ## How to Use
 
