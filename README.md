@@ -3,6 +3,9 @@
 **Hourglass PvP Calculator** is a tool for **Sea of Thieves**, specifically designed for the **Hourglass PvP** mode.
 This application helps players calculate essential information related to leveling, including the optimal win streak to aim for based on their win rate, the estimated time required to reach a target level, and more.
 
+__Note:__ 
+This does not interact with the game at all, this is purely a side-application used to calculate your Win-rate with the data you feed the tool, the streak you should be aiming for and the amount of battles required to reach your target level.
+
 ## Features
 
 - **Win Rate-Based Streak Suggestions**: Calculate the best win streak for your current win rate to maximize XP gains and reduce time spent leveling.
