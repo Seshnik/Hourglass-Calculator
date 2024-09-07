@@ -31,6 +31,16 @@ I used Pyinstaller to create this .exe file, so you will need to do the same, th
 
 As always, Virus Scan every file you download, regardless of who or where you get it from.
 
+## Screenshots
+
+**Main Menu**  
+![Main](screenshots/main.png)
+
+**Win-Rate Calculator**  
+![Win-Rate](screenshots/winrate.png)
+
+**Results**  
+![Results](screenshots/results.png)
 
 ## Credits
 
